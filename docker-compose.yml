@@ -1,0 +1,25 @@
+version: '3.5'
+services:
+  py-srv:
+    build: py-srv
+    command: sh -c "/wait && python app.py"
+    environment:
+      - WAIT_HOSTS=server:7080
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+  
+  zero:
+    image: dgraph/dgraph:latest
+    restart: on-failure
+    command: dgraph zero --my=zero:5080
+  
+  server:
+    image: dgraph/dgraph:latest
+    ports:
+      - 8080:8080
+      - 9080:9080
+    restart: on-failure
+    command: dgraph alpha --my=server:7080 --zero=zero:5080 --security whitelist=0.0.0.0/0
+
+
